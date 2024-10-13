@@ -25,6 +25,8 @@ https://github.com/user-attachments/assets/0bc0217f-4371-44a0-bfc6-36a5531376a7
 | `MinPlayers` | In this case if there are ten or more players connected the command cannot be used. | **YES** |
 | `CommandCooldownSeconds` | Command cooldown time in seconds. | **YES** |
 | `Command` | You can change the command to be used by the players or add extra commands. | **YES** |
+| `EmbedThumbnailURL` | Change thumbnail URL to your desired one. | **YES** |
+| `EmbedColor` | Change embed color to your desired one. | **YES** |
 
 ## Configuration example
 ```
@@ -36,7 +38,9 @@ https://github.com/user-attachments/assets/0bc0217f-4371-44a0-bfc6-36a5531376a7
     "MaxServerPlayers": 13,
     "MinPlayers": 10,
     "CommandCooldownSeconds": 120,
-    "Command": [ "css_need", "css_needplayers" ]
+    "Command": [ "css_need", "css_needplayers" ],
+    `EmbedThumbnailURL`: "https://image.gametracker.com/images/maps/160x120/csgo/{map}.jpg",
+    `EmbedColor`: 9246975
 }
 ```
 
