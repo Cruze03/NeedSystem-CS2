@@ -4,6 +4,7 @@ using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Localization;
+using CounterStrikeSharp.API.Modules.Cvars;
 
 namespace NeedSystem;
 
@@ -17,6 +18,12 @@ public class BaseConfigs : BasePluginConfig
 
     [JsonPropertyName("CustomDomain")]
     public string CustomDomain { get; set; } = "https://crisisgamer.com/redirect/connect.php";
+
+    [JsonPropertyName("EmbedThumbnailURL")]
+    public string EmbedThumbnailURL { get; set; } = "https://image.gametracker.com/images/maps/160x120/csgo/{map}.jpg";
+
+    [JsonPropertyName("EmbedColor")]
+    public int EmbedColor { get; set; } = 9246975;
 
     [JsonPropertyName("MentionRoleID")]
     public string MentionRoleID { get; set; } = "";
@@ -41,7 +48,7 @@ public class NeedSystemBase : BasePlugin, IPluginConfig<BaseConfigs>
     private Translator _translator;
 
     public override string ModuleName => "NeedSystem";
-    public override string ModuleVersion => "1.0.5";
+    public override string ModuleVersion => "1.0.6";
     public override string ModuleAuthor => "luca.uy";
     public override string ModuleDescription => "Allows players to send a message to discord requesting players.";
 
@@ -84,8 +91,13 @@ public class NeedSystemBase : BasePlugin, IPluginConfig<BaseConfigs>
 
                 _lastCommandTime = DateTime.Now;
 
-                controller.PrintToChat(_translator["Prefix"] + " " + _translator["NotifyPlayersMessage"]);
+                controller?.PrintToChat(_translator["Prefix"] + " " + _translator["NotifyPlayersMessage"]);
             });
+        }
+
+        if(hotReload)
+        {
+            _currentMap = Server.MapName;
         }
     }
 
@@ -114,24 +126,29 @@ public class NeedSystemBase : BasePlugin, IPluginConfig<BaseConfigs>
         if (caller == null) return;
 
         clientName = clientName.Replace("[Ready]", "").Replace("[Not Ready]", "").Trim();
+        string thumbnailUrl = Config.EmbedThumbnailURL.Replace("{map}", _currentMap, StringComparison.OrdinalIgnoreCase).Trim();
 
         var embed = new
         {
             title = _translator["EmbedTitle"],
             description = _translator["EmbedDescription"],
-            color = 9246975,
+            color = Config.EmbedColor,
+            thumbnail = new
+            {
+                url = thumbnailUrl
+            },
             fields = new[]
             {
                 new
                 {
                     name = _translator["ServerFieldTitle"],
-                    value = $"```{GetIP()}```",
+                    value = $"```{GetHostname()}```",
                     inline = false
                 },
                 new
                 {
                     name = _translator["RequestFieldTitle"],
-                    value = $"``` {clientName} ```",
+                    value = $"[{clientName}](https://steamcommunity.com/profiles/{caller.SteamID})",
                     inline = false
                 },
                 new
@@ -149,7 +166,7 @@ public class NeedSystemBase : BasePlugin, IPluginConfig<BaseConfigs>
                 new
                 {
                     name = _translator["ConnectionFieldTitle"],
-                    value = $"[**`connect {GetIP()}`**]({GetCustomDomain()}?ip={GetIP()})  {_translator["ClickToConnect"]}",
+                    value = $"```connect {GetIP()}```\n**{_translator["ClickToConnect"]}({GetCustomDomain()}?ip={GetIP()})**\n\n",
                     inline = false
                 }
             }
@@ -206,6 +223,17 @@ public class NeedSystemBase : BasePlugin, IPluginConfig<BaseConfigs>
     private string GetIP()
     {
         return Config.IPandPORT;
+    }
+    private string GetHostname()
+    {
+        string hostname = ConVar.Find("hostname")?.StringValue ?? _translator["UnknownMap"];
+
+        if(string.IsNullOrEmpty(hostname) || hostname.Length <= 3)
+        {
+            hostname = _translator["UnknownMap"];
+        }
+        
+        return hostname;
     }
     private string MentionRoleID()
     {

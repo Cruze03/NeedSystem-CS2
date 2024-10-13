@@ -12,5 +12,6 @@
   "PlayersFieldTitle": "Connected Players 🎮",
   "ConnectionFieldTitle": "Connection:",
   "ClickToConnect": "[Click to join]",
-  "UnknownPlayer": "Unknown"
+  "UnknownPlayer": "Unknown",
+  "UnknownMap": "Unknown Map"
 }
